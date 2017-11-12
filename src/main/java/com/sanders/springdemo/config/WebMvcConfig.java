@@ -2,6 +2,7 @@ package com.sanders.springdemo.config;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -10,16 +11,21 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
+import com.sanders.springdemo.interceptors.ExecutionTimerInterceptor;
 import com.sanders.springdemo.interceptors.HeaderInterceptor;
 
 @Configuration
 @ComponentScan("com.sanders.springdemo")
 @EnableWebMvc
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
+	
+	@Autowired
+	private HeaderInterceptor headerInterceptor;
+	@Autowired
+	private ExecutionTimerInterceptor executionTimerInterceptor;
 	
 	@Bean
 	public DataSource dataSource() {
@@ -28,14 +34,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 		DataSource dataSource = dsLookup.getDataSource("jdbc/springdb");
 		return dataSource;
 	}
-	
-//	@Bean
-//	public RequestMappingHandlerMapping requestMappingHandlerMapping() {
-//		RequestMappingHandlerMapping rmhm = new RequestMappingHandlerMapping();
-//		rmhm.setUseSuffixPatternMatch(true);
-//		rmhm.setUseTrailingSlashMatch(true);
-//		return rmhm;
-//	}
 	
 	@Bean
 	public UrlBasedViewResolver urlBasedViewResolver() {
@@ -53,7 +51,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new HeaderInterceptor());
+		registry.addInterceptor(headerInterceptor);
+		registry.addInterceptor(executionTimerInterceptor).addPathPatterns("/location");
 	}
 	
 	
